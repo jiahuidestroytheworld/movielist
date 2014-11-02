@@ -9,7 +9,7 @@ import org.glassfish.jersey.server.ResourceConfig;
 //import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.server.spring.scope.RequestContextFilter;
 
-
+import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 
 
 public class JerseyConfig extends ResourceConfig {
@@ -17,6 +17,8 @@ public class JerseyConfig extends ResourceConfig {
 	public JerseyConfig (){
 	 register(RequestContextFilter.class);
      packages("com.jiahui.movielists.resources");
+     this.register(ObjectMapperResolver.class);
+     this.register(new JacksonJsonProvider(ObjectMapperFactory.create()));
      this.register(new LoggingFilter(Logger.getLogger("com.jiahui.movielists"), MAX_ENTITY_LOG_BYTES));
      this.register(MultiPartFeature.class);
 

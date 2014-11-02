@@ -12,12 +12,12 @@ import java.util.List;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 import org.springframework.stereotype.Component;
 //import org.json.*;
-
 
 
 import com.google.api.client.http.GenericUrl;
@@ -27,6 +27,7 @@ import com.google.api.client.http.HttpResponse;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.jayway.jsonpath.JsonPath;
+import com.jiahui.movielists.representations.*;
 
 import java.io.FileInputStream;
 import java.util.Properties;
@@ -45,12 +46,15 @@ public class MovieResource {
 	private String GoogleApiKey = "AIzaSyDloyilmEQmQqDj7QC3H31BkNVsdv9Uk9A";
 	
 	@GET
-	@Produces(value = MediaType.APPLICATION_JSON)
-	public HashMap<String, Integer> getInTheaterMovies() throws Exception {
-		String dob = getActorInfo("Channing Tatum");
-		String query = "/lists/movies/in_theaters.json?page_limit=16&page=1&country=us&apikey=";
-		HashMap<String, Integer> movieList = new HashMap<String, Integer>();
-		HashMap<String, Integer> actors = new HashMap<String, Integer>();
+	@Path("inTheater/{pageId}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public IntheaterMovieList getInTheaterMovies(@PathParam("pageId") long pageId) throws Exception {
+		String query = "/lists/movies/in_theaters.json?page_limit=16&page=" + pageId + "&country=us&apikey=";
+		IntheaterMovieList inTheater = new IntheaterMovieList();
+		List<Movie> movielist = new ArrayList<Movie>();
+		//HashMap<String, Integer> movieList = new HashMap<String, Integer>();
+		HashMap<Long, String> actordobs = new HashMap<Long, String>();
 	    JSONParser parser = new JSONParser();
 		URL url = new URL(baseUrl + query + apiKey);
 		HttpURLConnection con = (HttpURLConnection)url.openConnection(); 
@@ -67,27 +71,36 @@ public class MovieResource {
 		in.close();
 		JSONObject obj = (JSONObject)parser.parse(response.toString());
 		String total =JsonPath.read(obj,"$.total").toString();
+		inTheater.setTotal(Integer.parseInt(total));
 		JSONArray arr = JsonPath.read(obj,"$.movies");
 		for(int i=0;i<arr.size();i++) {
-			String title = JsonPath.read(arr.get(i),"$.title").toString();
-			int totalage = 0;
+			Movie movie = new Movie();
+			movie.setTitle(JsonPath.read(arr.get(i),"$.title").toString());
+			movie.setId(Long.parseLong(JsonPath.read(arr.get(i),"$.id").toString()));
+			List<Actor> castlist = new ArrayList<Actor>();
 			JSONArray casts = JsonPath.read(arr.get(i),"$.abridged_cast");
 			for(int j=0;j<casts.size();j++) {
+				Actor actor = new Actor();
+				Long id = Long.parseLong(JsonPath.read(casts.get(j),"$.id").toString());
+				actor.setId(id);
 				String name = JsonPath.read(casts.get(j),"$.name").toString();
-				if(actors.containsKey(name)) {
-					totalage += actors.get(name);
+				actor.setName(name);
+				if(actordobs.containsKey(id)) {
+					actor.SetDob(actordobs.get(id));
 				}
 				else {
 					String actorDob = getActorInfo(name);
-					int age = getActorAge(actorDob);
-					totalage += age;
-					actors.put(name, age);
+					actor.SetDob(actorDob);
+					actordobs.put(id, actorDob);
 				}
+				castlist.add(actor);
 			}
+			movie.setCasts(castlist);
 			if(casts.size()>0)
-				movieList.put(title, totalage/casts.size());
+				movielist.add(movie);
 		}
-		return movieList;
+		inTheater.setMovies(movielist);
+		return inTheater;
 	}
 	/*
 	public String getActorInfo(String name) throws Exception {
