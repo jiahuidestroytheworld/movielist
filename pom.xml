@@ -15,18 +15,7 @@
         <jackson-version>2.3.2</jackson-version>
 
     </properties>
-    <repositories>
-    <repository>
-      <id>freebase-java</id>
-      <url>http://freebase-java.googlecode.com/svn/repository</url>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-    </repository>
-  </repositories>
+
    <dependencies>
    		<!-- Spring boot -->
          <dependency>
@@ -54,7 +43,11 @@
     		<artifactId>javax.ws.rs-api</artifactId>
     		<version>2.0</version>
 		</dependency>
-		
+		<dependency>
+            <groupId>com.fasterxml.jackson.jaxrs</groupId>
+            <artifactId>jackson-jaxrs-json-provider</artifactId>
+            <version>${jackson-version}</version>
+        </dependency>
 		
         
         <!-- Jersey -->
@@ -109,12 +102,18 @@
 			<version>20140107</version>
 		</dependency>
 
+		<dependency>
+			<groupId>com.jayway.jsonpath</groupId>
+			<artifactId>json-path</artifactId>
+			<version>0.8.1</version>
+		</dependency>
+	
     	<dependency>
-     	 <groupId>com.freebase</groupId>
-     	 <artifactId>freebase-java</artifactId>
-     	 <version>1.0.0</version>
-   		 </dependency>
-   		 
+      		<groupId>com.google.apis</groupId>
+      		<artifactId>google-api-services-freebase</artifactId>
+     		<version>v1-rev61-1.19.0</version>
+    	</dependency>
+
    </dependencies>
   <build>
     <resources>
